@@ -774,3 +774,303 @@ html, body {
   cursor: pointer;
   padding: 4px;
 }
+/* ── Event block header ── */
+.event-block {
+  border: 1px solid var(--border, #e8e0d8);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--surface, #fff);
+}
+
+.event-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.event-block-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orange, #e07b4a);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.btn-remove-acara {
+  background: none;
+  border: 1px solid #e0d5cc;
+  border-radius: 6px;
+  color: #b08070;
+  font-size: 12px;
+  padding: 2px 8px;
+  cursor: pointer;
+  line-height: 1.6;
+  transition: background .15s, color .15s;
+}
+.btn-remove-acara:hover {
+  background: #fdf0ea;
+  color: #c04a20;
+  border-color: #e0a080;
+}
+
+/* ── Add acara button ── */
+.btn-add-acara {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  border: 1.5px dashed var(--orange, #e07b4a);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--orange, #e07b4a);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  justify-content: center;
+  margin-top: 4px;
+  transition: background .15s;
+}
+.btn-add-acara:hover {
+  background: #fdf4ef;
+}
+.btn-add-acara span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* ══════════════════════════════
+   MUSIC LIST
+══════════════════════════════ */
+.music-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.music-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border, #e8e0d8);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+  position: relative;
+}
+.music-item input[type="radio"] { display: none; }
+
+.music-item:has(input:checked),
+.music-item.playing {
+  border-color: var(--orange, #e07b4a);
+  background: #fdf4ef;
+}
+
+.music-item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.music-item-icon { font-size: 20px; line-height: 1; }
+
+.music-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink, #2a1f15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.music-item-artist {
+  font-size: 11px;
+  color: var(--ink-soft, #9a8878);
+  margin-top: 1px;
+}
+
+.music-play-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--orange, #e07b4a);
+  background: transparent;
+  color: var(--orange, #e07b4a);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+  line-height: 1;
+}
+.music-play-btn:hover,
+.music-play-btn.active {
+  background: var(--orange, #e07b4a);
+  color: #fff;
+}
+.music-item-none .music-play-btn { display: none; }
+
+/* ── Mini Player ── */
+.music-player {
+  margin-top: 12px;
+  background: var(--ink, #2a1f15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+}
+
+.music-player-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-player-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange, #e07b4a);
+  flex-shrink: 0;
+  animation: blink 1s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.music-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.music-player-controls button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: .85;
+  transition: opacity .15s;
+}
+.music-player-controls button:hover { opacity: 1; }
+
+.music-progress-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.music-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.2);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.music-progress-fill {
+  height: 100%;
+  background: var(--orange, #e07b4a);
+  width: 0%;
+  transition: width .3s linear;
+  border-radius: 4px;
+}
+
+.music-time {
+  font-size: 11px;
+  color: rgba(255,255,255,.6);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══════════════════════════════
+   SUMMARY V2
+══════════════════════════════ */
+.summary-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+}
+
+.sum-section {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e8e0d8);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sum-section-title {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--orange, #e07b4a);
+  background: #fdf4ef;
+  border-bottom: 1px solid var(--border, #e8e0d8);
+}
+
+.sum-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border, #e8e0d8);
+  font-size: 13px;
+}
+.sum-row:last-child { border-bottom: none; }
+
+.sum-key {
+  flex-shrink: 0;
+  width: 120px;
+  color: var(--ink-soft, #9a8878);
+  font-size: 12px;
+  padding-top: 1px;
+}
+.sum-val {
+  flex: 1;
+  color: var(--ink, #2a1f15);
+  font-weight: 500;
+  word-break: break-word;
+}
+.sum-val-multiline {
+  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-soft, #9a8878);
+  font-weight: 400;
+}
+
+.sum-acara-block {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border, #e8e0d8);
+}
+.sum-acara-block:last-child { border-bottom: none; }
+.sum-acara-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink, #2a1f15);
+  margin-bottom: 6px;
+}
+.sum-acara-detail {
+  font-size: 12px;
+  color: var(--ink-soft, #9a8878);
+  line-height: 1.7;
+}

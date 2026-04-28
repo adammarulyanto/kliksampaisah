@@ -166,10 +166,8 @@
                                     data-id="<?= $template['id'] ?>"
                                     data-name="<?= esc($template['template_name']) ?>"
                                 >
-                                    <?= esc($template['template_name']) ?>
-                                    <small style="display: block; font-size: 10px; color: #bdc3c7;">
-                                        <?= esc($template->description ?? 'No description') ?>
-                                    </small>
+                                    
+                                
                                 </button>
                             </li>
                         <?php endforeach; ?>

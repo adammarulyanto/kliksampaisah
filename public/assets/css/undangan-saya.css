@@ -667,3 +667,14 @@
   .us-actions { gap: 6px; }
   .us-actions .btn-small { flex: 1; text-align: center; justify-content: center; }
 }
+
+/* Di file undangan-saya.css */
+.status-today {
+    background: #f59e0b;
+    color: white;
+}
+
+.us-countdown-text {
+    font-weight: 600;
+    color: var(--primary);
+}

@@ -19,6 +19,8 @@ class Dashboard extends BaseController
 
     public function index()
     {
+        
+
         $data = [
             'title' => 'Dashboard',
             'user' => [
@@ -34,6 +36,46 @@ class Dashboard extends BaseController
 
     public function undangan_saya()
     {
+        $db = \Config\Database::connect();
+        $userId = session()->get('user_id');
+        
+        $query = $db->query("
+                    SELECT 
+                        u.id,
+                        u.url_name,
+                        t.template_name,
+                        u.nickname_men,
+                        u.nickname_women,
+                        e.event_name,
+                        e.event_date,
+                        e.start_at,
+                        e.end_at,
+                        e.location,
+                        COUNT(g.id) as tamu,
+                        count(g.viewed_date) as viewed,
+                        COALESCE(SUM(g.rsvp), 0) as rsvp,
+                        e.event_date-current_date as days_left
+                    FROM 
+                        undangan u
+                        LEFT JOIN events e ON e.undangan_id = u.id AND e.main_event = 1
+                        LEFT JOIN guest g ON g.undangan_id = u.id
+                        LEFT JOIN template t ON t.id = u.template_id 
+                    WHERE
+                        u.user_id = ?
+                    GROUP BY 
+                        u.id,
+                        u.url_name,
+                        t.template_name,
+                        u.nickname_men,
+                        u.nickname_women,
+                        e.event_name,
+                        e.event_date,
+                        e.start_at,
+                        e.end_at,
+                        e.location
+                ", [$userId]);
+                
+        
         $data = [
             'title' => 'Undangan Saya',
             'user' => [
@@ -41,7 +83,8 @@ class Dashboard extends BaseController
                 'email' => session()->get('email'),
                 'username' => session()->get('username'),
                 'avatar' => session()->get('avatar')
-            ]
+            ],
+            'wedding_data' => $query->getResult()
         ];
         
         return view('dashboard/undangan_saya.php', $data);

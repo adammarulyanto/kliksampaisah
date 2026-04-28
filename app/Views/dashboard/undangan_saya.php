@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Undangan Saya — Invita</title>
-  <link rel="stylesheet" href="<?=base_url()?>/assets/css/style.css" />
-  <link rel="stylesheet" href="<?=base_url()?>/assets/css/dashboard.css" />
-  <link rel="stylesheet" href="<?=base_url()?>/assets/css/undangan-saya.css" />
+  <title><?= esc($title) ?> — Invita</title>
+  <link rel="stylesheet" href="<?= base_url() ?>/assets/css/style.css" />
+  <link rel="stylesheet" href="<?= base_url() ?>/assets/css/dashboard.css" />
+  <link rel="stylesheet" href="<?= base_url() ?>/assets/css/undangan-saya.css" />
 </head>
 <body>
 
 <div class="dashboard-layout">
 
   <!-- ── Sidebar ─────────────────────────────────────────── -->
-  <?php include('sidebar.php')?>
+  <?php include('sidebar.php') ?>
 
   <!-- ── Main Content ───────────────────────────────────── -->
   <main class="dashboard-content us-content">
@@ -25,36 +25,52 @@
         <p>Kelola dan pantau semua undangan digitalmu</p>
       </div>
       <div class="header-right">
-        <button class="btn-primary btn-new-invite" id="btnNewInvite" onClick="window.location='<?=base_url('buat-undangan')?>'">
+        <button class="btn-primary btn-new-invite" id="btnNewInvite" onClick="window.location='<?= base_url('buat-undangan') ?>'">
           ➕ Buat Undangan Baru
         </button>
       </div>
     </header>
 
-    <!-- ── Summary Bar ─── -->
+    <!-- ── Summary Bar (Dynamic) ─── -->
+    <?php 
+    // Hitung summary dari data
+    $total_undangan = count($wedding_data);
+    $total_tamu = array_sum(array_column($wedding_data, 'tamu'));
+    $total_rsvp = array_sum(array_column($wedding_data, 'rsvp'));
+    $avg_rsvp_rate = $total_tamu > 0 ? round(($total_rsvp / $total_tamu) * 100) : 0;
+    
+    // Hitung upcoming & past
+    $upcoming_count = 0;
+    $past_count = 0;
+    foreach ($wedding_data as $w) {
+        if ($w->days_left > 0) $upcoming_count++;
+        else if ($w->days_left < 0) $past_count++;
+    }
+    ?>
+    
     <div class="summary-bar">
       <div class="summary-item">
-        <span class="summary-num">3</span>
+        <span class="summary-num"><?= esc($total_undangan) ?></span>
         <span class="summary-label">Total Undangan</span>
       </div>
       <div class="summary-divider"></div>
       <div class="summary-item">
-        <span class="summary-num">594</span>
+        <span class="summary-num"><?= esc($total_tamu) ?></span>
         <span class="summary-label">Total Tamu</span>
       </div>
       <div class="summary-divider"></div>
       <div class="summary-item">
-        <span class="summary-num">290</span>
+        <span class="summary-num"><?= esc($total_rsvp) ?></span>
         <span class="summary-label">Sudah RSVP</span>
       </div>
       <div class="summary-divider"></div>
       <div class="summary-item">
-        <span class="summary-num">1.284</span>
+        <span class="summary-num">-</span>
         <span class="summary-label">Total Views</span>
       </div>
       <div class="summary-divider"></div>
       <div class="summary-item">
-        <span class="summary-num summary-num--accent">49%</span>
+        <span class="summary-num summary-num--accent"><?= esc($avg_rsvp_rate) ?>%</span>
         <span class="summary-label">Avg. RSVP Rate</span>
       </div>
     </div>
@@ -62,9 +78,9 @@
     <!-- ── Filter & Sort Bar ─── -->
     <div class="filter-bar">
       <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">Semua (3)</button>
-        <button class="filter-tab" data-filter="upcoming">Akan Datang (2)</button>
-        <button class="filter-tab" data-filter="past">Sudah Lewat (1)</button>
+        <button class="filter-tab active" data-filter="all">Semua (<?= esc($total_undangan) ?>)</button>
+        <button class="filter-tab" data-filter="upcoming">Akan Datang (<?= esc($upcoming_count) ?>)</button>
+        <button class="filter-tab" data-filter="past">Sudah Lewat (<?= esc($past_count) ?>)</button>
       </div>
       <div class="filter-actions">
         <div class="search-box">
@@ -84,310 +100,145 @@
 
     <!-- ── Invitations Container ─── -->
     <div class="invitations-container" id="invitationsContainer">
+      <?php if (!empty($wedding_data)): ?>
+        <?php foreach ($wedding_data as $row): ?>
+          <?php 
+          // Tentukan status
+          if ($row->days_left > 0) {
+              $status = 'upcoming';
+              $status_text = 'Akan Datang';
+              $status_class = 'status-upcoming';
+          } elseif ($row->days_left == 0) {
+              $status = 'today';
+              $status_text = 'Hari Ini!';
+              $status_class = 'status-today';
+          } else {
+              $status = 'past';
+              $status_text = 'Sudah Lewat';
+              $status_class = 'status-past';
+          }
+          
+          // Format tanggal
+          $formatted_date = date('l, d F Y', strtotime($row->event_date));
+          
+          // Hitung persentase RSVP
+          $rsvp_percent = $row->tamu > 0 ? round(($row->rsvp / $row->tamu) * 100) : 0;
+          $belum_rsvp = $row->tamu - $row->rsvp;
+          
+          // Format days_left
+          $days_left_abs = abs($row->days_left);
+          $days_text = $row->days_left > 0 ? "$days_left_abs hari lagi" : ($row->days_left == 0 ? "Hari ini!" : "Sudah lewat $days_left_abs hari");
+          ?>
+          
+          <article class="us-card" data-status="<?= $status ?>" data-name="<?= strtolower(esc($row->nickname_men . ' ' . $row->nickname_women)) ?>">
+            <!-- Thumbnail side -->
+            <div class="us-card-thumb">
+              <div class="us-thumb-bg bg-floral">
+                <div class="us-invite-mock style-floral">
+                  <div class="invite-top" style="width:32px;"></div>
+                  <div class="invite-sub">The Wedding of</div>
+                  <div class="invite-names"><?= esc($row->nickname_men) ?><br>&amp;<br><?= esc($row->nickname_women) ?></div>
+                  <div class="invite-divider"></div>
+                  <div class="invite-date"><?= date('d/m/Y', strtotime($row->event_date)) ?></div>
+                </div>
+              </div>
+              <span class="us-status-badge <?= $status_class ?>"><?= $status_text ?></span>
+              <div class="us-thumb-actions">
+                <button class="thumb-action-btn" title="Lihat Undangan" onclick="window.location='<?= base_url('undangan/' . $row->url_name) ?>'">👁️</button>
+                <button class="thumb-action-btn copy-link-btn" title="Salin Link" data-link="<?= base_url('undangan/' . $row->url_name) ?>">🔗</button>
+                <button class="thumb-action-btn share-btn" title="Bagikan" data-link="<?= base_url('undangan/' . $row->url_name) ?>">📤</button>
+              </div>
+            </div>
 
-      <!-- ============================
-           CARD 1 — Ayu & Dimas
-           Status: Upcoming
-      ============================= -->
-      <article class="us-card" data-status="upcoming" data-name="ayu dimas">
-        <!-- Thumbnail side -->
-        <div class="us-card-thumb">
-          <div class="us-thumb-bg bg-floral">
-            <div class="us-invite-mock style-floral">
-              <div class="invite-top" style="width:32px;"></div>
-              <div class="invite-sub">The Wedding of</div>
-              <div class="invite-names">Ayu<br>&amp;<br>Dimas</div>
-              <div class="invite-divider"></div>
-              <div class="invite-date">14 · 06 · 2025</div>
-            </div>
-          </div>
-          <span class="us-status-badge status-upcoming">Akan Datang</span>
-          <div class="us-thumb-actions">
-            <button class="thumb-action-btn" title="Lihat Undangan">👁️</button>
-            <button class="thumb-action-btn" title="Salin Link">🔗</button>
-            <button class="thumb-action-btn" title="Bagikan">📤</button>
-          </div>
-        </div>
+            <!-- Info side -->
+            <div class="us-card-body">
+              <div class="us-card-top">
+                <div>
+                  <h2 class="us-card-title"><?= esc($row->nickname_men) ?> & <?= esc($row->nickname_women) ?></h2>
+                  <p class="us-card-template">Template: <?= esc($row->template_name) ?></p>
+                </div>
+                <div class="us-card-menu">
+                  <button class="menu-btn" title="Opsi lainnya">⋯</button>
+                </div>
+              </div>
 
-        <!-- Info side -->
-        <div class="us-card-body">
-          <div class="us-card-top">
-            <div>
-              <h2 class="us-card-title">Ayu & Dimas</h2>
-              <p class="us-card-template">Template: Floral Romance</p>
-            </div>
-            <div class="us-card-menu">
-              <button class="menu-btn" title="Opsi lainnya">⋯</button>
-            </div>
-          </div>
+              <!-- Date & Venue -->
+              <div class="us-meta-row">
+                <div class="us-meta-item">
+                  <span class="us-meta-icon">💌</span>
+                  <span><?=esc($row->event_name)?></span>
+                </div>
+                <div class="us-meta-item">
+                  <span class="us-meta-icon">📅</span>
+                  <span><?= $formatted_date ?></span>
+                </div>
+                <div class="us-meta-item">
+                  <span class="us-meta-icon">📍</span>
+                  <span><?= esc($row->location) ?></span>
+                </div>
+                <div class="us-meta-item">
+                  <span class="us-meta-icon">⏰</span>
+                  <span><?= esc($row->start_at) ?> – <?= esc($row->end_at) ?></span>
+                </div>
+              </div>
 
-          <!-- Date & Venue -->
-          <div class="us-meta-row">
-            <div class="us-meta-item">
-              <span class="us-meta-icon">📅</span>
-              <span>Sabtu, 14 Juni 2025</span>
-            </div>
-            <div class="us-meta-item">
-              <span class="us-meta-icon">📍</span>
-              <span>Gedung Harmoni, Jakarta Selatan</span>
-            </div>
-            <div class="us-meta-item">
-              <span class="us-meta-icon">⏰</span>
-              <span>09.00 – 13.00 WIB</span>
-            </div>
-          </div>
+              <!-- Stats Row -->
+              <div class="us-stats-row">
+                <div class="us-mini-stat">
+                  <div class="us-mini-stat-val"><?= esc($row->tamu) ?></div>
+                  <div class="us-mini-stat-label">Tamu</div>
+                </div>
+                <div class="us-mini-stat">
+                  <div class="us-mini-stat-val" style="color:var(--orange);"><?= esc($row->rsvp) ?></div>
+                  <div class="us-mini-stat-label">RSVP</div>
+                </div>
+                <div class="us-mini-stat">
+                  <div class="us-mini-stat-val" style="color:#e07b2a;"><?= esc($belum_rsvp) ?></div>
+                  <div class="us-mini-stat-label">Belum</div>
+                </div>
+                <div class="us-mini-stat">
+                  <div class="us-mini-stat-val" style="color:var(--grey-600);"><?= esc($row->viewed) ?></div>
+                  <div class="us-mini-stat-label">Views</div>
+                </div>
+              </div>
 
-          <!-- Stats Row -->
-          <div class="us-stats-row">
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val">287</div>
-              <div class="us-mini-stat-label">Tamu</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:var(--orange);">156</div>
-              <div class="us-mini-stat-label">RSVP</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:#e07b2a;">131</div>
-              <div class="us-mini-stat-label">Belum</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:var(--grey-600);">542</div>
-              <div class="us-mini-stat-label">Views</div>
-            </div>
-          </div>
+              <!-- RSVP Progress -->
+              <div class="us-progress-block">
+                <div class="us-progress-header">
+                  <span class="us-progress-label">Konfirmasi Kehadiran</span>
+                  <span class="us-progress-pct"><?= $rsvp_percent ?>%</span>
+                </div>
+                <div class="us-progress-bar">
+                  <div class="us-progress-fill" style="width:<?= $rsvp_percent ?>%;"></div>
+                </div>
+                <div class="us-progress-breakdown">
+                  <span class="breakdown-dot dot-hadir"></span><span><?= esc($row->rsvp) ?> Hadir</span>
+                  <span class="breakdown-dot dot-belum" style="margin-left:12px;"></span><span><?= esc($belum_rsvp) ?> Belum konfirmasi</span>
+                </div>
+              </div>
 
-          <!-- RSVP Progress -->
-          <div class="us-progress-block">
-            <div class="us-progress-header">
-              <span class="us-progress-label">Konfirmasi Kehadiran</span>
-              <span class="us-progress-pct">54%</span>
-            </div>
-            <div class="us-progress-bar">
-              <div class="us-progress-fill" style="width:54%;"></div>
-            </div>
-            <div class="us-progress-breakdown">
-              <span class="breakdown-dot dot-hadir"></span><span>156 Hadir</span>
-              <span class="breakdown-dot dot-belum" style="margin-left:12px;"></span><span>131 Belum konfirmasi</span>
-            </div>
-          </div>
+              <!-- Countdown -->
+              <div class="us-countdown-row">
+                <span class="us-meta-icon">⏳</span>
+                <span class="us-countdown-text"><?= $days_text ?></span>
+                <span class="us-countdown-sub">menuju hari H</span>
+              </div>
 
-          <!-- Countdown -->
-          <div class="us-countdown-row">
-            <span class="us-meta-icon">⏳</span>
-            <span class="us-countdown-text">50 hari lagi</span>
-            <span class="us-countdown-sub">menuju hari H</span>
-          </div>
-
-          <!-- Actions -->
-          <div class="us-actions">
-            <button class="btn-primary btn-small">Lihat Undangan</button>
-            <button class="btn-outline btn-small">Edit</button>
-            <button class="btn-icon" title="Salin Link">🔗</button>
-            <button class="btn-icon" title="Statistik">📊</button>
-            <button class="btn-icon btn-icon-danger" title="Hapus">🗑️</button>
-          </div>
-        </div>
-      </article>
-
-      <!-- ============================
-           CARD 2 — Rina & Bagas
-           Status: Upcoming
-      ============================= -->
-      <article class="us-card" data-status="upcoming" data-name="rina bagas">
-        <div class="us-card-thumb">
-          <div class="us-thumb-bg bg-modern">
-            <div class="us-invite-mock style-modern">
-              <div class="invite-top" style="width:32px;"></div>
-              <div class="invite-sub">The Wedding of</div>
-              <div class="invite-names">Rina<br>&amp;<br>Bagas</div>
-              <div class="invite-divider"></div>
-              <div class="invite-date">08 · 11 · 2025</div>
+              <!-- Actions -->
+              <div class="us-actions">
+                <button class="btn-primary btn-small" onclick="window.location='<?= base_url('undangan/' . $row->url_name) ?>'">Lihat Undangan</button>
+                <button class="btn-outline btn-small" onclick="window.location='<?= base_url('dashboard/edit/' . $row->id) ?>'">Edit</button>
+                <button class="btn-icon copy-link-btn" title="Salin Link" data-link="<?= base_url('undangan/' . $row->url_name) ?>">🔗</button>
+                <button class="btn-icon" title="Statistik" onclick="window.location='<?= base_url('dashboard/statistik/' . $row->id) ?>'">📊</button>
+                <button class="btn-icon btn-icon-danger delete-btn" title="Hapus" data-id="<?= $row->id ?>">🗑️</button>
+              </div>
             </div>
-          </div>
-          <span class="us-status-badge status-upcoming">Akan Datang</span>
-          <div class="us-thumb-actions">
-            <button class="thumb-action-btn" title="Lihat Undangan">👁️</button>
-            <button class="thumb-action-btn" title="Salin Link">🔗</button>
-            <button class="thumb-action-btn" title="Bagikan">📤</button>
-          </div>
-        </div>
-
-        <div class="us-card-body">
-          <div class="us-card-top">
-            <div>
-              <h2 class="us-card-title">Rina & Bagas</h2>
-              <p class="us-card-template">Template: Modern Luxe</p>
-            </div>
-            <div class="us-card-menu">
-              <button class="menu-btn">⋯</button>
-            </div>
-          </div>
-
-          <div class="us-meta-row">
-            <div class="us-meta-item">
-              <span class="us-meta-icon">📅</span>
-              <span>Minggu, 8 November 2025</span>
-            </div>
-            <div class="us-meta-item">
-              <span class="us-meta-icon">📍</span>
-              <span>The Ritz-Carlton, Bali</span>
-            </div>
-            <div class="us-meta-item">
-              <span class="us-meta-icon">⏰</span>
-              <span>17.00 – 21.00 WITA</span>
-            </div>
-          </div>
-
-          <div class="us-stats-row">
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val">142</div>
-              <div class="us-mini-stat-label">Tamu</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:var(--orange);">89</div>
-              <div class="us-mini-stat-label">RSVP</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:#e07b2a;">53</div>
-              <div class="us-mini-stat-label">Belum</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:var(--grey-600);">398</div>
-              <div class="us-mini-stat-label">Views</div>
-            </div>
-          </div>
-
-          <div class="us-progress-block">
-            <div class="us-progress-header">
-              <span class="us-progress-label">Konfirmasi Kehadiran</span>
-              <span class="us-progress-pct">63%</span>
-            </div>
-            <div class="us-progress-bar">
-              <div class="us-progress-fill" style="width:63%;"></div>
-            </div>
-            <div class="us-progress-breakdown">
-              <span class="breakdown-dot dot-hadir"></span><span>89 Hadir</span>
-              <span class="breakdown-dot dot-belum" style="margin-left:12px;"></span><span>53 Belum konfirmasi</span>
-            </div>
-          </div>
-
-          <div class="us-countdown-row">
-            <span class="us-meta-icon">⏳</span>
-            <span class="us-countdown-text">197 hari lagi</span>
-            <span class="us-countdown-sub">menuju hari H</span>
-          </div>
-
-          <div class="us-actions">
-            <button class="btn-primary btn-small">Lihat Undangan</button>
-            <button class="btn-outline btn-small">Edit</button>
-            <button class="btn-icon" title="Salin Link">🔗</button>
-            <button class="btn-icon" title="Statistik">📊</button>
-            <button class="btn-icon btn-icon-danger" title="Hapus">🗑️</button>
-          </div>
-        </div>
-      </article>
-
-      <!-- ============================
-           CARD 3 — Sinta & Hendra
-           Status: Past
-      ============================= -->
-      <article class="us-card" data-status="past" data-name="sinta hendra">
-        <div class="us-card-thumb">
-          <div class="us-thumb-bg bg-gold us-thumb-faded">
-            <div class="us-invite-mock style-gold">
-              <div class="invite-top" style="width:32px;"></div>
-              <div class="invite-sub">The Wedding of</div>
-              <div class="invite-names">Sinta<br>&amp;<br>Hendra</div>
-              <div class="invite-divider"></div>
-              <div class="invite-date">10 · 01 · 2025</div>
-            </div>
-          </div>
-          <span class="us-status-badge status-past">Selesai</span>
-          <div class="us-thumb-actions">
-            <button class="thumb-action-btn" title="Lihat Undangan">👁️</button>
-            <button class="thumb-action-btn" title="Salin Link">🔗</button>
-            <button class="thumb-action-btn" title="Bagikan">📤</button>
-          </div>
-        </div>
-
-        <div class="us-card-body us-card-body--faded">
-          <div class="us-card-top">
-            <div>
-              <h2 class="us-card-title">Sinta & Hendra</h2>
-              <p class="us-card-template">Template: Golden Hour</p>
-            </div>
-            <div class="us-card-menu">
-              <button class="menu-btn">⋯</button>
-            </div>
-          </div>
-
-          <div class="us-meta-row">
-            <div class="us-meta-item">
-              <span class="us-meta-icon">📅</span>
-              <span>Jumat, 10 Januari 2025</span>
-            </div>
-            <div class="us-meta-item">
-              <span class="us-meta-icon">📍</span>
-              <span>Ballroom Mulia, Bandung</span>
-            </div>
-            <div class="us-meta-item">
-              <span class="us-meta-icon">⏰</span>
-              <span>11.00 – 15.00 WIB</span>
-            </div>
-          </div>
-
-          <div class="us-stats-row">
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val">165</div>
-              <div class="us-mini-stat-label">Diundang</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:#3aab6d;">148</div>
-              <div class="us-mini-stat-label">Hadir</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:var(--coral);">17</div>
-              <div class="us-mini-stat-label">Tidak Hadir</div>
-            </div>
-            <div class="us-mini-stat">
-              <div class="us-mini-stat-val" style="color:var(--grey-600);">344</div>
-              <div class="us-mini-stat-label">Views</div>
-            </div>
-          </div>
-
-          <div class="us-progress-block">
-            <div class="us-progress-header">
-              <span class="us-progress-label">Tingkat Kehadiran</span>
-              <span class="us-progress-pct" style="color:#3aab6d;">90%</span>
-            </div>
-            <div class="us-progress-bar">
-              <div class="us-progress-fill" style="width:90%; background: linear-gradient(90deg, #3aab6d, #27ae60);"></div>
-            </div>
-            <div class="us-progress-breakdown">
-              <span class="breakdown-dot" style="background:#3aab6d;"></span><span>148 Hadir</span>
-              <span class="breakdown-dot" style="background:var(--coral); margin-left:12px;"></span><span>17 Tidak hadir</span>
-            </div>
-          </div>
-
-          <!-- Recap badge -->
-          <div class="us-recap-badge">
-            <span>🎉</span>
-            <span>Acara selesai dengan kehadiran <strong>90%</strong> — Luar biasa!</span>
-          </div>
-
-          <div class="us-actions">
-            <button class="btn-primary btn-small">Lihat Rekap</button>
-            <button class="btn-outline btn-small">Duplikat</button>
-            <button class="btn-icon" title="Unduh Laporan">📥</button>
-            <button class="btn-icon btn-icon-danger" title="Hapus">🗑️</button>
-          </div>
-        </div>
-      </article>
-
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div><!-- end invitations-container -->
 
-    <!-- ── Empty State (hidden by default) ─── -->
+    <!-- ── Empty State ─── -->
     <div class="us-empty-state" id="emptyState" style="display:none;">
       <div class="us-empty-icon">📭</div>
       <h3>Tidak ada undangan ditemukan</h3>
@@ -467,13 +318,52 @@
     observer.observe(card);
   });
 
-
-  // ── Copy link buttons ─────────────────────────────
-  document.querySelectorAll('[title="Salin Link"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      navigator.clipboard?.writeText('https://invita.id/u/ayu-dimas-2025');
+  // ── Copy link functionality ─────────────────────────
+  function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = btn.textContent;
       btn.textContent = '✅';
-      setTimeout(() => { btn.textContent = '🔗'; }, 1500);
+      setTimeout(() => { btn.textContent = originalText; }, 1500);
+    });
+  }
+
+  document.querySelectorAll('.copy-link-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const link = btn.dataset.link;
+      copyToClipboard(link, btn);
+    });
+  });
+
+  // ── Share functionality ────────────────────────────
+  document.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const link = btn.dataset.link;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Undangan Pernikahan',
+            text: 'Anda diundang!',
+            url: link
+          });
+        } catch (err) {
+          console.log('Error sharing:', err);
+        }
+      } else {
+        copyToClipboard(link, btn);
+      }
+    });
+  });
+
+  // ── Delete confirmation ────────────────────────────
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (confirm('Apakah Anda yakin ingin menghapus undangan ini?')) {
+        window.location.href = `<?= base_url('dashboard/hapus/') ?>${id}`;
+      }
     });
   });
 </script>
