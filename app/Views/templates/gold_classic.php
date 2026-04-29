@@ -684,14 +684,14 @@
     <div class="divider-ornament">✦</div>
 
     <div class="couple-name">
-      <span id="tpl-groom-name">Rizky Pratama</span>
+      <span id="tpl-groom-name"><?=$groom_nickname ?? 'Grooms Name'?></span>
       <span class="ampersand">&amp;</span>
-      <span id="tpl-bride-name">Zahra Aulia</span>
+      <span id="tpl-bride-name"><?=$bride_nickname ?? 'Grooms Name'?></span>
     </div>
 
     <div class="divider-ornament">✦</div>
 
-    <p class="cover-tagline" id="tpl-cover-tagline">Sabtu, 14 Juni 2025 · Bandung, Jawa Barat</p>
+    <p class="cover-tagline" id="tpl-cover-tagline"><?=$acara_utama['tanggal']?></p>
 
     <div class="scroll-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -704,7 +704,9 @@
 <section class="reveal">
   <p class="section-label">Dengan Penuh Bahagia</p>
   <div class="sep-line"></div>
-  <p id="tpl-love-story"></p>
+  <p id="tpl-love-story">
+        <?=$love_story?>
+  </p>
 </section>
 
 <hr class="section-rule">

@@ -1074,3 +1074,97 @@ html, body {
   color: var(--ink-soft, #9a8878);
   line-height: 1.7;
 }
+
+/* Gallery Upload */
+.gallery-drop-zone {
+  border: 2px dashed var(--border, #ddd);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.gallery-drop-zone.drag-over {
+  border-color: var(--orange, #e07b4a);
+  background: rgba(224,123,74,.05);
+}
+.gallery-drop-icon { font-size: 32px; margin-bottom: 8px; }
+.gallery-drop-text { font-size: 14px; font-weight: 500; }
+.gallery-drop-sub  { font-size: 12px; color: var(--ink-soft); margin: 4px 0 12px; }
+.gallery-pick-btn  {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--orange, #e07b4a);
+  color: var(--orange, #e07b4a);
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+.gallery-pick-btn:hover { background: var(--orange, #e07b4a); color: #fff; }
+
+.gallery-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.gallery-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border, #ddd);
+}
+.gallery-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.gallery-thumb-remove {
+  position: absolute;
+  top: 3px; right: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  line-height: 20px;
+  text-align: center;
+  padding: 0;
+}
+.gallery-thumb-num {
+  position: absolute;
+  bottom: 3px; left: 5px;
+  font-size: 10px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8);
+}
+
+.main-event-radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+}
+.main-event-radio input[type="radio"] {
+    display: none;
+}
+.main-event-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border, #ddd);
+    color: var(--ink-soft, #999);
+    background: transparent;
+    transition: all .2s;
+    user-select: none;
+}
+.main-event-radio input[type="radio"]:checked + .main-event-badge {
+    background: var(--orange, #e07b4a);
+    border-color: var(--orange, #e07b4a);
+    color: #fff;
+    font-weight: 600;
+}

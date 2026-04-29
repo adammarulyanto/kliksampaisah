@@ -144,9 +144,9 @@
               </div>
               <span class="us-status-badge <?= $status_class ?>"><?= $status_text ?></span>
               <div class="us-thumb-actions">
-                <button class="thumb-action-btn" title="Lihat Undangan" onclick="window.location='<?= base_url('undangan/' . $row->url_name) ?>'">👁️</button>
-                <button class="thumb-action-btn copy-link-btn" title="Salin Link" data-link="<?= base_url('undangan/' . $row->url_name) ?>">🔗</button>
-                <button class="thumb-action-btn share-btn" title="Bagikan" data-link="<?= base_url('undangan/' . $row->url_name) ?>">📤</button>
+                <button class="thumb-action-btn" title="Lihat Undangan" onclick="window.location='<?= base_url($row->url_name) ?>'">👁️</button>
+                <button class="thumb-action-btn copy-link-btn" title="Salin Link" data-link="<?= base_url($row->url_name) ?>">🔗</button>
+                <button class="thumb-action-btn share-btn" title="Bagikan" data-link="<?= base_url($row->url_name) ?>">📤</button>
               </div>
             </div>
 

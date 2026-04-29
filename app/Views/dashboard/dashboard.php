@@ -30,12 +30,13 @@
     </header>
 
     <!-- Stats Cards -->
+    <!-- Stats Cards -->
     <section class="stats-cards">
       <div class="stat-card">
         <div class="stat-card-icon">📋</div>
         <div class="stat-card-content">
           <div class="stat-card-label">Total Undangan</div>
-          <div class="stat-card-value">3</div>
+          <div class="stat-card-value"><?= $total_undangan ?></div>
           <div class="stat-card-sub">undangan dibuat</div>
         </div>
       </div>
@@ -43,7 +44,7 @@
         <div class="stat-card-icon">👥</div>
         <div class="stat-card-content">
           <div class="stat-card-label">Total Tamu</div>
-          <div class="stat-card-value">287</div>
+          <div class="stat-card-value"><?= $total_tamu ?></div>
           <div class="stat-card-sub">dari semua undangan</div>
         </div>
       </div>
@@ -51,15 +52,17 @@
         <div class="stat-card-icon">✅</div>
         <div class="stat-card-content">
           <div class="stat-card-label">Sudah RSVP</div>
-          <div class="stat-card-value">156</div>
-          <div class="stat-card-sub">54% dari tamu</div>
+          <div class="stat-card-value"><?= $total_rsvp ?></div>
+          <div class="stat-card-sub">
+            <?= $total_tamu > 0 ? round($total_rsvp / $total_tamu * 100) : 0 ?>% dari tamu
+          </div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-card-icon">👁️</div>
         <div class="stat-card-content">
           <div class="stat-card-label">Total Views</div>
-          <div class="stat-card-value">542</div>
+          <div class="stat-card-value"><?= $total_views ?></div>
           <div class="stat-card-sub">pengunjung unik</div>
         </div>
       </div>
@@ -74,103 +77,62 @@
 
       <div class="invitations-grid">
 
-        <!-- Invitation Card 1 -->
+        <?php foreach ($undangan_list as $inv): ?>
+        <?php
+          $pria   = $inv->nickname_men   ?: 'Pria';
+          $wanita = $inv->nickname_women ?: 'Wanita';
+          $pct    = $inv->total_tamu > 0
+                    ? round($inv->total_rsvp / $inv->total_tamu * 100)
+                    : 0;
+          $tgl    = $inv->event_date
+                    ? date('l, d F Y', strtotime($inv->event_date))
+                    : '—';
+          $tglFmt = $inv->event_date
+                    ? date('d · m · Y', strtotime($inv->event_date))
+                    : '— · — · —';
+        ?>
         <div class="invitation-card">
           <div class="invite-card-thumb">
-            <div class="invite-preview-large style-floral">
+            <div class="invite-preview-large">
               <div class="invite-top" style="width:36px;"></div>
               <div class="invite-sub">The Wedding of</div>
-              <div class="invite-names">Ayu<br>&amp;<br>Dimas</div>
+              <div class="invite-names">
+                <?= esc($pria) ?><br>&amp;<br><?= esc($wanita) ?>
+              </div>
               <div class="invite-divider"></div>
-              <div class="invite-date">14 · 06 · 2025</div>
+              <div class="invite-date"><?= $tglFmt ?></div>
             </div>
           </div>
           <div class="invite-card-body">
-            <h3 class="invite-card-title">Ayu & Dimas</h3>
-            <p class="invite-card-date">Sabtu, 14 Juni 2025</p>
-            <p class="invite-card-guests">287 tamu • 156 RSVP</p>
-            
+            <h3 class="invite-card-title"><?= esc($pria) ?> &amp; <?= esc($wanita) ?></h3>
+            <p class="invite-card-date"><?= $tgl ?></p>
+            <p class="invite-card-guests">
+              <?= $inv->total_tamu ?> tamu &bull; <?= $inv->total_rsvp ?> RSVP
+            </p>
             <div class="invite-card-progress">
               <div class="progress-bar">
-                <div class="progress-fill" style="width: 54%;"></div>
+                <div class="progress-fill" style="width:<?= $pct ?>%;"></div>
               </div>
-              <span class="progress-text">54% konfirmasi</span>
+              <span class="progress-text"><?= $pct ?>% konfirmasi</span>
             </div>
-
             <div class="invite-card-actions">
-              <button class="btn-small btn-primary">Lihat</button>
-              <button class="btn-small btn-outline">Edit</button>
+              <a href="<?= base_url($inv->url_name) ?>" 
+                class="btn-small btn-primary" target="_blank">Lihat</a>
+              <a href="<?= base_url('undangan/edit/' . $inv->id) ?>" 
+                class="btn-small btn-outline">Edit</a>
             </div>
           </div>
         </div>
+        <?php endforeach; ?>
 
-        <!-- Invitation Card 2 -->
-        <div class="invitation-card">
-          <div class="invite-card-thumb">
-            <div class="invite-preview-large style-modern">
-              <div class="invite-top" style="width:36px;"></div>
-              <div class="invite-sub">The Wedding of</div>
-              <div class="invite-names">Rina<br>&amp;<br>Bagas</div>
-              <div class="invite-divider"></div>
-              <div class="invite-date">08 · 11 · 2025</div>
-            </div>
-          </div>
-          <div class="invite-card-body">
-            <h3 class="invite-card-title">Rina & Bagas</h3>
-            <p class="invite-card-date">Minggu, 8 November 2025</p>
-            <p class="invite-card-guests">142 tamu • 89 RSVP</p>
-            
-            <div class="invite-card-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 63%;"></div>
-              </div>
-              <span class="progress-text">63% konfirmasi</span>
-            </div>
-
-            <div class="invite-card-actions">
-              <button class="btn-small btn-primary">Lihat</button>
-              <button class="btn-small btn-outline">Edit</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Invitation Card 3 -->
-        <div class="invitation-card">
-          <div class="invite-card-thumb">
-            <div class="invite-preview-large style-gold">
-              <div class="invite-top" style="width:36px;"></div>
-              <div class="invite-sub">The Wedding of</div>
-              <div class="invite-names">Sinta<br>&amp;<br>Hendra</div>
-              <div class="invite-divider"></div>
-              <div class="invite-date">15 · 03 · 2026</div>
-            </div>
-          </div>
-          <div class="invite-card-body">
-            <h3 class="invite-card-title">Sinta & Hendra</h3>
-            <p class="invite-card-date">Jumat, 15 Maret 2026</p>
-            <p class="invite-card-guests">165 tamu • 45 RSVP</p>
-            
-            <div class="invite-card-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 27%;"></div>
-              </div>
-              <span class="progress-text">27% konfirmasi</span>
-            </div>
-
-            <div class="invite-card-actions">
-              <button class="btn-small btn-primary">Lihat</button>
-              <button class="btn-small btn-outline">Edit</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty Card - Buat Baru -->
+        <!-- Empty Card -->
         <div class="invitation-card invitation-card-empty">
           <div class="empty-content">
             <div class="empty-icon">➕</div>
             <h3>Buat Undangan Baru</h3>
             <p>Mulai dengan memilih template favorit</p>
-            <a href="<?=base_url('buat-undangan')?>" class="btn-primary" style="margin-top: 16px;">Mulai</a>
+            <a href="<?=base_url('buat-undangan')?>" 
+              class="btn-primary" style="margin-top:16px;">Mulai</a>
           </div>
         </div>
 
@@ -180,47 +142,46 @@
     <!-- Recent Activity -->
     <section class="recent-activity">
       <h2>Aktivitas Terbaru</h2>
-      
       <div class="activity-list">
-        <div class="activity-item">
-          <div class="activity-icon">👁️</div>
-          <div class="activity-content">
-            <p class="activity-title"><strong>Ayu & Dimas</strong> — 45 orang melihat undangan</p>
-            <p class="activity-time">3 jam yang lalu</p>
-          </div>
-        </div>
 
-        <div class="activity-item">
-          <div class="activity-icon">✅</div>
-          <div class="activity-content">
-            <p class="activity-title"><strong>Budi Santoso</strong> sudah RSVP di undangan Ayu & Dimas</p>
-            <p class="activity-time">5 jam yang lalu</p>
+        <?php if (empty($recent_activity)): ?>
+          <div class="activity-item">
+            <div class="activity-icon">📭</div>
+            <div class="activity-content">
+              <p class="activity-title">Belum ada aktivitas</p>
+            </div>
           </div>
-        </div>
+        <?php else: ?>
+          <?php foreach ($recent_activity as $act): ?>
+          <?php
+            $nama   = esc($act->guest_name);
+            $couple = esc($act->nickname_men) . ' &amp; ' . esc($act->nickname_women);
+            $waktu  = $act->viewed_date
+                      ? date('j M Y, H:i', strtotime($act->viewed_date))
+                      : '—';
+          ?>
+          <div class="activity-item">
+            <div class="activity-icon">
+              <?= $act->rsvp ? '✅' : '👁️' ?>
+            </div>
+            <div class="activity-content">
+              <?php if ($act->rsvp): ?>
+                <p class="activity-title">
+                  <strong><?= $nama ?></strong> sudah RSVP di undangan 
+                  <strong><?= $couple ?></strong>
+                </p>
+              <?php else: ?>
+                <p class="activity-title">
+                  <strong><?= $nama ?></strong> melihat undangan 
+                  <strong><?= $couple ?></strong>
+                </p>
+              <?php endif; ?>
+              <p class="activity-time"><?= $waktu ?></p>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
 
-        <div class="activity-item">
-          <div class="activity-icon">💬</div>
-          <div class="activity-content">
-            <p class="activity-title"><strong>Siti Nurhaliza</strong> menambahkan pesan: "Gak bisa hadir, mohon maaf"</p>
-            <p class="activity-time">1 hari yang lalu</p>
-          </div>
-        </div>
-
-        <div class="activity-item">
-          <div class="activity-icon">🎨</div>
-          <div class="activity-content">
-            <p class="activity-title">Kamu membuat undangan baru <strong>Sinta & Hendra</strong></p>
-            <p class="activity-time">2 hari yang lalu</p>
-          </div>
-        </div>
-
-        <div class="activity-item">
-          <div class="activity-icon">🔗</div>
-          <div class="activity-content">
-            <p class="activity-title">Link undangan <strong>Rina & Bagas</strong> dibagikan 12 kali</p>
-            <p class="activity-time">3 hari yang lalu</p>
-          </div>
-        </div>
       </div>
     </section>
 

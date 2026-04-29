@@ -28,6 +28,8 @@ $routes->get('/dashboard', 'Dashboard::index');
 $routes->get('/undangan-saya', 'Dashboard::undangan_saya');
 $routes->get('/buat-undangan', 'Dashboard::buat_undangan');
 $routes->get('/template', 'Dashboard::template');
+$routes->post('/buat-undangan/save', 'Dashboard::save_undangan');
+$routes->get('/check-url', 'Dashboard::checkUrl');
 
 // Template
 $routes->get('/cek-template', 'Dashboard::cek_template');

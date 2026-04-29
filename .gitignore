@@ -1,1 +1,13 @@
-writable/debugbar/
+# Ignore session files
+writable/session/
+writable/session/*
+writable/session/**/*
+
+# Ignore logs files
+writable/logs/
+writable/logs/*
+writable/logs/**/*
+
+# Atau gabungkan keduanya
+writable/session/
+writable/logs/
