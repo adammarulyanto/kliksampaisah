@@ -686,12 +686,12 @@
     <div class="couple-name">
       <span id="tpl-groom-name"><?=$groom_nickname ?? 'Grooms Name'?></span>
       <span class="ampersand">&amp;</span>
-      <span id="tpl-bride-name"><?=$bride_nickname ?? 'Grooms Name'?></span>
+      <span id="tpl-bride-name"><?=$bride_nickname ?? 'Brides Name'?></span>
     </div>
 
     <div class="divider-ornament">✦</div>
 
-    <p class="cover-tagline" id="tpl-cover-tagline"><?=$acara_utama['tanggal']?></p>
+    <p class="cover-tagline" id="tpl-cover-tagline"><?=$acara_utama['tanggal'] ?? 'Minggu, 01 Januari 2026'?></p>
 
     <div class="scroll-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -705,7 +705,7 @@
   <p class="section-label">Dengan Penuh Bahagia</p>
   <div class="sep-line"></div>
   <p id="tpl-love-story">
-        <?=$love_story?>
+        <?=$love_story ?? 'Love story' ?>
   </p>
 </section>
 
@@ -720,9 +720,9 @@
   <div class="mempelai-grid">
     <div class="mempelai-card">
       <div class="avatar">🤵</div>
-      <div class="mempelai-name" id="tpl-groom-fullname">Rizky Pratama, S.T.</div>
+      <div class="mempelai-name" id="tpl-groom-fullname"><?=$groom_name ?? 'Rizky Pratama, S.T.'?></div>
         <div class="mempelai-parents" id="tpl-groom-parents">
-          Putra pertama dari<br>Bapak H. Darmawan &amp; Ibu Hj. Siti Rahayu
+          Putra dari<br><?=$groom_father ?? 'Bapak H. Darmawan'?> &amp; <?=$groom_mother ?? 'Ibu Hj. Siti Rahayu'?>
         </div>
     </div>
 
@@ -730,9 +730,9 @@
 
     <div class="mempelai-card">
       <div class="avatar">👰</div>
-      <div class="mempelai-name" id="tpl-bride-fullname">Zahra Aulia, S.Pd.</div>
+      <div class="mempelai-name" id="tpl-bride-fullname"><?=$bride_name ?? 'Zahra Aulia, S.Pd.'?></div>
       <div class="mempelai-parents" id="tpl-bride-parents">
-        Putri kedua dari<br>Bapak H. Ridwan Fauzi &amp; Ibu Hj. Nurul Hidayah
+        Putri dari<br><?=$bride_father ?? 'Bapak H. Ridwan Fauzi'?> &amp; <?=$bride_mother ?? 'Ibu Hj. Nurul Hidayah'?>
       </div>
     </div>
   </div>
@@ -747,7 +747,19 @@
   <div class="sep-line"></div>
 
   <div class="acara-wrapper">
+    <?php if(!empty($acara)):?>
+    <?php foreach ($acara as $row): ?>
     <div class="acara-card">
+      <div class="acara-type"><?=$row['nama']?></div>
+      <div class="acara-date" id="tpl-akad-date"><?=date('d', strtotime($row['tanggal']))?></div>
+      <div class="acara-month" id="tpl-akad-month"><?=date('M Y', strtotime($row['tanggal']))?></div>
+      <div class="acara-time" id="tpl-akad-time"><?=date('H:i', strtotime($row['mulai']))?> – <?=date('H:i', strtotime($row['selesai']))?> WIB</div>
+      <div class="acara-venue" id="tpl-akad-venue"><?=$row['tempat']?></div>
+      <div class="acara-address" id="tpl-akad-address"><?=$row['alamat']?></div>
+    </div>
+    <?php endforeach; ?>
+    <?php else:?>
+      <div class="acara-card">
       <div class="acara-type">Akad Nikah</div>
       <div class="acara-date" id="tpl-akad-date">14</div>
       <div class="acara-month" id="tpl-akad-month">Juni 2025</div>
@@ -756,16 +768,7 @@
       <div class="acara-address" id="tpl-akad-address">Jl. Merdeka No. 12, Bandung</div>
       <a id="tpl-akad-maps-btn" href="#" target="_blank">Buka Maps</a>
     </div>
-
-    <div class="acara-card">
-      <div class="acara-type">Resepsi</div>
-      <div class="acara-date" id="tpl-resepsi-date">14</div>
-      <div class="acara-month" id="tpl-resepsi-month">Juni 2025</div>
-      <div class="acara-time" id="tpl-resepsi-time">11.00 – 15.00 WIB</div>
-      <div class="acara-venue" id="tpl-resepsi-venue">Gedung Serbaguna Permata</div>
-      <div class="acara-address" id="tpl-resepsi-address">Jl. Sudirman No. 88, Bandung</div>
-      <a id="tpl-resepsi-maps-btn" href="#" target="_blank">Buka Maps</a>
-    </div>
+    <?php endif;?>
   </div>
 </section>
 
@@ -1135,7 +1138,7 @@
         // ══════════════════════════════════════
         //  ACARA — Akad
         // ══════════════════════════════════════
-        setText('tpl-akad-day',        fmtDay(d.akadDate));
+        setText('tpl-akad-day',        fmtDay(d.akadDate),);
         setText('tpl-akad-date',       d.akadDate ? new Date(d.akadDate + 'T00:00:00').getDate() : '—');
         setText('tpl-akad-month',      fmtMonth(d.akadDate));
         setText('tpl-akad-time',       fmtTime(d.akadTimeStart, d.akadTimeEnd));

@@ -3,6 +3,7 @@
 namespace Config;
 
 use CodeIgniter\Database\Config;
+use PDO;
 
 /**
  * Database Configuration
@@ -42,6 +43,9 @@ class Database extends Config
         'strictOn' => false,
         'failover' => [],
         'port'     => 5434,
+        'options'  => [
+            PDO::ATTR_TIMEOUT => 10,
+        ],
     ];
 
     //    /**

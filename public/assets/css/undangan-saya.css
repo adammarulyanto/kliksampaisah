@@ -24,7 +24,7 @@
 
 .summary-num {
   display: block;
-  font-family: 'Playfair Display', serif;
+  
   font-size: 28px;
   font-weight: 700;
   color: #fff;
@@ -62,29 +62,50 @@
 .filter-tabs {
   display: flex;
   gap: 6px;
-  background: var(--grey-100);
-  border-radius: 10px;
+  background: var(--o50);
+  border-radius: 40px;
   padding: 4px;
 }
 
 .filter-tab {
   padding: 8px 18px;
-  background: transparent;
+  background: var(--o50);
+  border-radius: 40px;
   border: none;
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--grey-600);
+  
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text3);
   cursor: pointer;
   transition: var(--transition);
 }
 
 .filter-tab.active {
-  background: var(--white);
-  color: var(--orange);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: white; color: var(--o500); box-shadow: 0 1px 6px rgba(200,120,20,0.11); 
 }
+
+
+.pill-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--o50);
+  border-radius: 40px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.pill-tab {
+  padding: 4px 11px;
+  border-radius: 40px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.14s;
+  white-space: nowrap;
+}
+
+.pill-tab.active { background: white; color: var(--o500); box-shadow: 0 1px 6px rgba(200,120,20,0.11); }
 
 .filter-tab:hover:not(.active) { color: var(--dark); }
 
@@ -93,38 +114,6 @@
   align-items: center;
   gap: 10px;
 }
-
-/* Search Box */
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--white);
-  border: 1.5px solid var(--grey-200);
-  border-radius: var(--radius-sm);
-  padding: 9px 14px;
-  transition: var(--transition);
-}
-
-.search-box:focus-within {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px rgba(255,122,47,0.10);
-}
-
-.search-icon { font-size: 14px; }
-
-.search-box input {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: var(--dark);
-  width: 180px;
-}
-
-.search-box input::placeholder { color: var(--grey-400); }
-
 /* View Toggle */
 .view-toggle {
   display: flex;
@@ -165,16 +154,17 @@
 .us-card {
   display: grid;
   grid-template-columns: 300px 1fr;
-  background: var(--white);
-  border: 1px solid var(--grey-200);
+  background: var(--bg);
+  border: 1px solid var(--o50);
   border-radius: var(--radius);
   overflow: hidden;
   transition: var(--transition);
+  margin-bottom: 20px;
 }
 
 .us-card:hover {
   border-color: rgba(255,122,47,0.3);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   transform: translateY(-3px);
 }
 
@@ -231,7 +221,7 @@
   margin-bottom: 8px;
 }
 .us-invite-mock .invite-names {
-  font-family: 'Playfair Display', serif;
+  
   font-size: 15px;
   font-style: italic;
   font-weight: 700;
@@ -265,7 +255,7 @@
 }
 
 .status-upcoming {
-  background: var(--orange);
+  background: var(--sky-dark);
   color: white;
 }
 
@@ -329,7 +319,7 @@
 }
 
 .us-card-title {
-  font-family: 'Playfair Display', serif;
+  
   font-size: 24px;
   font-weight: 700;
   color: var(--dark);
@@ -383,7 +373,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
-  background: var(--cream);
+  background: #f5f5f5;
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
@@ -397,19 +387,20 @@
 .us-mini-stat:last-child { border-right: none; }
 
 .us-mini-stat-val {
-  font-family: 'Playfair Display', serif;
+  
   font-size: 20px;
   font-weight: 700;
-  color: var(--dark);
+  color: black;
   margin-bottom: 2px;
 }
 
 .us-mini-stat-label {
   font-size: 10px;
-  color: var(--grey-400);
+  color: black;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  opacity: 0.6;
 }
 
 /* ── Progress Block ── */
@@ -514,7 +505,7 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 15px;
   border-top: 1px solid var(--grey-200);
 }
 
@@ -572,7 +563,7 @@
 .us-empty-icon { font-size: 64px; margin-bottom: 20px; }
 
 .us-empty-state h3 {
-  font-family: 'Playfair Display', serif;
+  
   font-size: 22px;
   font-weight: 700;
   color: var(--dark);

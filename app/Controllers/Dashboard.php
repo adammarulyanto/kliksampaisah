@@ -21,12 +21,10 @@ class Dashboard extends BaseController
     {
         $userId = session()->get('user_id');
 
-        // ── Total undangan milik user
         $totalUndangan = $this->db->table('undangan')
             ->where('user_id', $userId)
             ->countAllResults();
 
-        // ── Total tamu, RSVP, views dari semua undangan user
         $statsRow = $this->db->query("
             SELECT 
                 COUNT(g.id)                  AS total_tamu,
@@ -37,7 +35,6 @@ class Dashboard extends BaseController
             WHERE u.user_id = ?
         ", [$userId])->getRow();
 
-        // ── 3 undangan terbaru dengan event utama
         $undanganList = $this->db->query("
             SELECT 
                 u.id,
@@ -47,6 +44,7 @@ class Dashboard extends BaseController
                 t.template_name,
                 e.event_date,
                 e.event_name,
+                t.cover,
                 COUNT(g.id)              AS total_tamu,
                 COALESCE(SUM(g.rsvp), 0) AS total_rsvp
             FROM undangan u
@@ -55,12 +53,11 @@ class Dashboard extends BaseController
             LEFT JOIN template t ON t.id = u.template_id
             WHERE u.user_id = ?
             GROUP BY u.id, u.url_name, u.nickname_men, u.nickname_women,
-                    t.template_name, e.event_date, e.event_name
+                    t.template_name, e.event_date, e.event_name, t.cover
             ORDER BY u.id DESC
             LIMIT 3
         ", [$userId])->getResult();
 
-        // ── Aktivitas terbaru (10 guest terakhir)
         $recentActivity = $this->db->query("
             SELECT
                 g.guest_name,
@@ -133,9 +130,21 @@ class Dashboard extends BaseController
         return view('dashboard/undangan_saya.php', $data);
     }
 
+    // ════════════════════════════════════════════════════════════════
+    //  BUAT UNDANGAN
+    //  Perubahan: tambah $formSections dari tabel form_template,
+    //  di-pass ke view sebagai JSON agar JS wizard bisa rebuild
+    //  pages secara dinamis sesuai template yang dipilih user.
+    // ════════════════════════════════════════════════════════════════
     public function buat_undangan()
     {
-        $templates = $this->templateModel->findAll();
+        $user_id = session()->get('user_id');
+
+        $templates = $this->templateModel->getOwnedButUnusedTemplates($user_id);
+
+        // ── Ambil semua form_template, group by template_id → section ──
+        // Struktur hasil: [ template_id => [ 'SectionName' => [ ['form_name'=>..., 'form_html'=>...], ... ], ... ], ... ]
+        $formSections = $this->getFormSectionsGrouped();
 
         $data = [
             'title'            => 'Buat Undangan',
@@ -146,12 +155,24 @@ class Dashboard extends BaseController
                 'avatar'    => session()->get('avatar')
             ],
             'templates'        => $templates,
-            'current_template' => $templates[0] ?? null
+            'current_template' => $templates[0] ?? null,
+
+            // ← BARU: dikirim ke view, di-embed ke window.DB_FORM_SECTIONS
+            'formSections'     => $formSections,
         ];
 
         return view('dashboard/buat_undangan.php', $data);
     }
 
+    // ════════════════════════════════════════════════════════════════
+    //  SAVE UNDANGAN
+    //  Perubahan:
+    //  1. Ambil field custom dari form_template berdasarkan template_id
+    //     yang dipilih (yang bukan field standar hardcoded).
+    //  2. Field standar tetap di-save seperti biasa.
+    //  3. Field custom (name berasal dari form_html input[name]) di-save
+    //     ke undangan_param dengan key = name attribute-nya.
+    // ════════════════════════════════════════════════════════════════
     public function save_undangan()
     {
         // ── VALIDASI ─────────────────────────────────────────────
@@ -159,9 +180,16 @@ class Dashboard extends BaseController
         $validation->setRules([
             'template_id' => 'required',
             'url_name'    => 'required|min_length[3]|regex_match[/^[a-z0-9_-]+$/]',
-            'groom_name'  => 'required',
-            'bride_name'  => 'required',
         ]);
+
+        $postData = $this->request->getPost();
+
+        if (isset($postData['groom_name'])) {
+            $validation->setRule('groom_name', 'Nama Pengantin Pria', 'required');
+        }
+        if (isset($postData['bride_name'])) {
+            $validation->setRule('bride_name', 'Nama Pengantin Wanita', 'required');
+        }
 
         if (!$validation->withRequest($this->request)->run()) {
             return $this->response->setJSON([
@@ -170,26 +198,47 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // ── AMBIL SEMUA INPUT ────────────────────────────────────
-        $template_id    = $this->request->getPost('template_id');
-        $url_name       = $this->request->getPost('url_name');
-        $judul_undangan = $this->request->getPost('judul_undangan');
-        $keterangan     = $this->request->getPost('keterangan');
-        $groom_name     = $this->request->getPost('groom_name');
-        $groom_nickname = $this->request->getPost('groom_nickname');
-        $bride_name     = $this->request->getPost('bride_name');
-        $bride_nickname = $this->request->getPost('bride_nickname');
-        $groom_father   = $this->request->getPost('groom_father');
-        $bride_father   = $this->request->getPost('bride_father');
-        $groom_mother   = $this->request->getPost('groom_mother');
-        $bride_mother   = $this->request->getPost('bride_mother');
-        $quote_text     = $this->request->getPost('quote_text');
-        $love_story     = $this->request->getPost('love_story');
-        $music_choice   = $this->request->getPost('music_choice');
-        $acaraRaw       = $this->request->getPost('acara') ?? [];
-        $mainEventIndex = (int) $this->request->getPost('main_event');
+        // ── INPUT LANGSUNG KE TABEL undangan ─────────────────────
+        $template_id           = $postData['template_id']            ?? null;
+        $ownership_template_id = $postData['ownership_template_id']  ?? null;
+        $url_name              = $postData['url_name']               ?? '';
+        $groom_name            = $postData['groom_name']             ?? '';
+        $groom_nickname        = $postData['groom_nickname']         ?? '';
+        $bride_name            = $postData['bride_name']             ?? '';
+        $bride_nickname        = $postData['bride_nickname']         ?? '';
+        $acaraRaw              = $postData['acara']                  ?? [];
+        $mainEventIndex        = (int) ($postData['main_event']      ?? 0);
+        $userId                = session()->get('user_id')           ?? null;
 
-        // ── AMBIL GALLERY DARI $_FILES LANGSUNG ──────────────────
+        // ── ROUTING FIELD → undangan_param ───────────────────────
+        //
+        //  Logika baru: FLIP dari whitelist ke skiplist.
+        //  - $skipKeys     : field yang TIDAK disimpan ke mana pun
+        //                    (metadata form / sudah diproses manual)
+        //  - $directFields : field yang sudah masuk tabel `undangan`
+        //                    langsung via INSERT di bawah
+        //  - Semua sisa POST key → otomatis masuk undangan_param
+        //
+        //  Tidak perlu lagi $standardParamKeys / $customParamKeys.
+        //  Field custom dari form_template akan tersimpan otomatis
+        //  tanpa perlu mengubah kode controller.
+
+        $skipKeys = [
+            'template_id',
+            'ownership_template_id',
+            'main_event',
+            // 'acara' dan 'gallery' adalah array, sudah difilter via is_array()
+        ];
+
+        $directFields = [
+            'url_name',
+            'groom_name',
+            'groom_nickname',
+            'bride_name',
+            'bride_nickname',
+        ];
+
+        // ── AMBIL GALLERY ─────────────────────────────────────────
         $galleryFiles = [];
         if (!empty($_FILES['gallery']['name'][0])) {
             $count = count($_FILES['gallery']['name']);
@@ -228,12 +277,12 @@ class Dashboard extends BaseController
             'nickname_men'   => $groom_nickname,
             'fullname_women' => $bride_name,
             'nickname_women' => $bride_nickname,
-            'user_id'        => session()->get('user_id') ?? null,
+            'user_id'        => $userId,
         ]);
 
         $undangan_id = $this->db->insertID();
 
-        // 2. INSERT events (per acara)
+        // 2. INSERT events
         foreach ($acaraRaw as $i => $item) {
             $this->db->table('events')->insert([
                 'undangan_id' => $undangan_id,
@@ -242,7 +291,7 @@ class Dashboard extends BaseController
                 'start_at'    => $item['mulai']   ?? null,
                 'end_at'      => $item['selesai'] ?? null,
                 'location'    => $item['tempat']  ?? null,
-                'main_event'  => ($i === $mainEventIndex) ? 1 : 0,  // ← dari radio
+                'main_event'  => ($i === $mainEventIndex) ? 1 : 0,
             ]);
 
             $event_id = $this->db->insertID();
@@ -255,18 +304,22 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // 3. INSERT undangan_param
-        $this->insertParams($undangan_id, [
-            'judul_undangan' => $judul_undangan,
-            'keterangan'     => $keterangan,
-            'groom_father'   => $groom_father,
-            'bride_father'   => $bride_father,
-            'groom_mother'   => $groom_mother,
-            'bride_mother'   => $bride_mother,
-            'quote_text'     => $quote_text,
-            'love_story'     => $love_story,
-            'music_choice'   => $music_choice,
-        ]);
+        // 3. INSERT undangan_param — semua field sisa POST otomatis
+        $paramsToSave = [];
+        foreach ($postData as $key => $value) {
+            // Field metadata / sudah diproses manual
+            if (in_array($key, $skipKeys, true))     continue;
+            // Field yang sudah masuk tabel undangan langsung
+            if (in_array($key, $directFields, true)) continue;
+            // Array (acara[0][nama], gallery[], dll) — sudah ditangani terpisah
+            if (is_array($value))                    continue;
+            // Nilai kosong tidak perlu disimpan
+            if ($value === null || $value === '')     continue;
+
+            $paramsToSave[$key] = $value;
+        }
+
+        $this->insertParams($undangan_id, $paramsToSave);
 
         // 4. GALLERY UPLOAD
         $templateRow = $this->db->table('template')
@@ -298,6 +351,56 @@ class Dashboard extends BaseController
             }
         }
 
+        // ── Gift: delete-insert ────────────────────────────────
+        $this->db->table('undangan_param')
+            ->where('undangan_id', $undangan_id)   // was $id
+            ->where('param_name LIKE', 'gift_%')
+            ->delete();
+
+        if (isset($postData['gift']) && is_array($postData['gift'])) {  // was $input['gift']
+            foreach ($postData['gift'] as $i => $gift) {
+                $type = $gift['type'] ?? 'rekening';
+                $this->db->table('undangan_param')->insert([
+                    'undangan_id' => $undangan_id,  // was $id
+                    'param_name'  => "gift_{$i}_type",
+                    'param_value' => $type,
+                ]);
+                if ($type === 'rekening') {
+                    foreach (['rekening_nama', 'rekening_bank', 'rekening_nomor'] as $f) {
+                        if (!empty($gift[$f])) {
+                            $this->db->table('undangan_param')->insert([
+                                'undangan_id' => $undangan_id,  // was $id
+                                'param_name'  => "gift_{$i}_{$f}",
+                                'param_value' => $gift[$f],
+                            ]);
+                        }
+                    }
+                } else {
+                    foreach (['alamat_nama', 'alamat_detail'] as $f) {
+                        if (!empty($gift[$f])) {
+                            $this->db->table('undangan_param')->insert([
+                                'undangan_id' => $undangan_id,  // was $id
+                                'param_name'  => "gift_{$i}_{$f}",
+                                'param_value' => $gift[$f],
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 5. UPDATE USED TEMPLATE
+        $this->db->table('ownership_template')
+            ->where([
+                'user_id' => $userId,
+                'id'      => $ownership_template_id,
+            ])
+            ->update([
+                'undangan_id'  => $undangan_id,
+                'last_used_at' => date('Y-m-d H:i:s'),
+                'updated_at'   => date('Y-m-d H:i:s'),
+            ]);
+
         $this->db->transComplete();
 
         if ($this->db->transStatus() === false) {
@@ -308,7 +411,61 @@ class Dashboard extends BaseController
         }
 
         return redirect()->to(base_url('undangan-saya'))
-                ->with('success', 'Undangan berhasil dibuat!');
+            ->with('success', 'Undangan berhasil dibuat!');
+    }
+
+    /**
+     * Ambil semua name attribute dari form_html di form_template
+     * untuk template tertentu, exclude standardKeys.
+     */
+    public function getCustomParamKeysForTemplate(int $templateId, array $standardKeys = []): array
+    {
+        $rows = $this->db->table('form_template')
+            ->where('template_id', $templateId)
+            ->get()->getResultArray();
+
+        $keys = [];
+        foreach ($rows as $row) {
+            $html = $row['form_html'] ?? '';
+            preg_match_all('/\bname=["\']([^"\']+)["\']/', $html, $matches);
+            foreach ($matches[1] as $nameAttr) {
+                if (strpos($nameAttr, '[') !== false) continue;
+                if (in_array($nameAttr, $standardKeys, true)) continue;
+                $keys[] = $nameAttr;
+            }
+        }
+
+        return array_unique($keys);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  HELPER: getFormSectionsGrouped
+    //  Query form_template, group by template_id → form_section.
+    //  Dipakai oleh buat_undangan() dan edit_undangan() di Undangan.php.
+    // ════════════════════════════════════════════════════════════════
+    public function getFormSectionsGrouped(): array
+    {
+        $rows = $this->db->table('form_template')
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $tid = $row['template_id'];
+            $sec = $row['form_section'];
+            if (!isset($grouped[$tid])) {
+                $grouped[$tid] = [];
+            }
+            if (!isset($grouped[$tid][$sec])) {
+                $grouped[$tid][$sec] = [];
+            }
+            $grouped[$tid][$sec][] = [
+                'form_name' => $row['form_name'],
+                'form_html' => $row['form_html'],
+            ];
+        }
+
+        return $grouped;
     }
 
     // ── HELPER: batch insert ke undangan_param ───────────────────
@@ -391,20 +548,85 @@ class Dashboard extends BaseController
 
     public function template()
     {
+        $templateModel    = new \App\Models\TemplateModel();
+        $globalParamModel = new \App\Models\GlobalParamModel();
+
+        $templates = $templateModel->findAll();
+
+        foreach ($templates as &$template) {
+            $featureIds = $this->parsePostgresArray($template['feature']);
+            $fitToIds   = $this->parsePostgresArray($template['fit_to']);
+
+            if (!empty($featureIds)) {
+                $features = $globalParamModel->getFeaturesByIds($featureIds);
+                $template['feature_names'] = array_column($features, 'param_name');
+                $template['feature']       = $featureIds;
+            } else {
+                $template['feature_names'] = [];
+                $template['feature']       = [];
+            }
+
+            if (!empty($fitToIds)) {
+                $fitTo = $globalParamModel->getFitToByIds($fitToIds);
+                $template['fit_to_names'] = array_column($fitTo, 'param_name');
+                $template['fit_to']       = $fitToIds;
+            } else {
+                $template['fit_to_names'] = [];
+                $template['fit_to']       = [];
+            }
+        }
+
         $data = [
-            'title' => 'Template',
-            'user'  => [
+            'title'     => 'Template',
+            'templates' => $templates,
+            'user'      => [
                 'full_name' => session()->get('full_name'),
                 'email'     => session()->get('email'),
                 'username'  => session()->get('username'),
                 'avatar'    => session()->get('avatar')
-            ]
+            ],
         ];
+
         return view('dashboard/template.php', $data);
     }
 
-    function format_rupiah($angka)
+    private function parsePostgresArray($postgresArray): array
+    {
+        if (empty($postgresArray))    return [];
+        if (is_array($postgresArray)) return $postgresArray;
+
+        if (is_string($postgresArray)) {
+            $trimmed = trim($postgresArray, '{}');
+            if (empty($trimmed)) return [];
+            return array_map('intval', explode(',', $trimmed));
+        }
+
+        return [];
+    }
+
+    public function format_rupiah($angka)
     {
         return "Rp " . number_format($angka, 0, ',', '.');
+    }
+
+    private function buildGiftArray(array $params): array
+    {
+        $gift = [];
+        $i = 0;
+        while (isset($params["gift_{$i}_type"])) {
+            $type = $params["gift_{$i}_type"];
+            $item = ['type' => $type];
+            if ($type === 'rekening') {
+                $item['rekening_nama']  = $params["gift_{$i}_rekening_nama"]  ?? '';
+                $item['rekening_bank']  = $params["gift_{$i}_rekening_bank"]  ?? '';
+                $item['rekening_nomor'] = $params["gift_{$i}_rekening_nomor"] ?? '';
+            } else {
+                $item['alamat_nama']   = $params["gift_{$i}_alamat_nama"]   ?? '';
+                $item['alamat_detail'] = $params["gift_{$i}_alamat_detail"] ?? '';
+            }
+            $gift[] = $item;
+            $i++;
+        }
+        return $gift;
     }
 }

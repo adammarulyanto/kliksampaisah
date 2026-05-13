@@ -1,35 +1,37 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><?= esc($title) ?> — Invita</title>
-  <link rel="stylesheet" href="<?= base_url() ?>/assets/css/style.css" />
-  <link rel="stylesheet" href="<?= base_url() ?>/assets/css/dashboard.css" />
-  <link rel="stylesheet" href="<?= base_url() ?>/assets/css/undangan-saya.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undangin — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="<?=base_url()?>assets/css/style.css" />
+<link rel="stylesheet" href="<?=base_url()?>assets/css/undangan-saya.css" />
 </head>
 <body>
 
-<div class="dashboard-layout">
+<?php include('sidebar.php')?>
 
-  <!-- ── Sidebar ─────────────────────────────────────────── -->
-  <?php include('sidebar.php') ?>
+<!-- MAIN -->
+<main class="main">
 
-  <!-- ── Main Content ───────────────────────────────────── -->
-  <main class="dashboard-content us-content">
 
-    <!-- ── Page Header ─── -->
-    <header class="dashboard-header">
-      <div class="header-left">
-        <h1>Undangan Saya</h1>
-        <p>Kelola dan pantau semua undangan digitalmu</p>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <!-- <div class="hamburger" onclick="openDrawer()"><span></span><span></span><span></span></div> -->
+      <div class="topbar-left">
+        <h1>Halo, <?=$user['full_name']?>!</h1>
+        <p>Rabu, 29 April 2026 · 6 undangan aktif</p>
       </div>
-      <div class="header-right">
-        <button class="btn-primary btn-new-invite" id="btnNewInvite" onClick="window.location='<?= base_url('buat-undangan') ?>'">
-          ➕ Buat Undangan Baru
-        </button>
-      </div>
-    </header>
+    </div>
+    <div class="topbar-right">
+      <button class="new-btn" onClick="window.location='<?=base_url('buat-undangan')?>'"><i class="fa-solid fa-plus"></i> Buat Undangan</button>
+    </div>
+  </div>
 
     <!-- ── Summary Bar (Dynamic) ─── -->
     <?php 
@@ -37,6 +39,7 @@
     $total_undangan = count($wedding_data);
     $total_tamu = array_sum(array_column($wedding_data, 'tamu'));
     $total_rsvp = array_sum(array_column($wedding_data, 'rsvp'));
+    $total_views = array_sum(array_column($wedding_data, 'viewed'));
     $avg_rsvp_rate = $total_tamu > 0 ? round(($total_rsvp / $total_tamu) * 100) : 0;
     
     // Hitung upcoming & past
@@ -47,40 +50,47 @@
         else if ($w->days_left < 0) $past_count++;
     }
     ?>
-    
-    <div class="summary-bar">
-      <div class="summary-item">
-        <span class="summary-num"><?= esc($total_undangan) ?></span>
-        <span class="summary-label">Total Undangan</span>
-      </div>
-      <div class="summary-divider"></div>
-      <div class="summary-item">
-        <span class="summary-num"><?= esc($total_tamu) ?></span>
-        <span class="summary-label">Total Tamu</span>
-      </div>
-      <div class="summary-divider"></div>
-      <div class="summary-item">
-        <span class="summary-num"><?= esc($total_rsvp) ?></span>
-        <span class="summary-label">Sudah RSVP</span>
-      </div>
-      <div class="summary-divider"></div>
-      <div class="summary-item">
-        <span class="summary-num">-</span>
-        <span class="summary-label">Total Views</span>
-      </div>
-      <div class="summary-divider"></div>
-      <div class="summary-item">
-        <span class="summary-num summary-num--accent"><?= esc($avg_rsvp_rate) ?>%</span>
-        <span class="summary-label">Avg. RSVP Rate</span>
-      </div>
-    </div>
 
-    <!-- ── Filter & Sort Bar ─── -->
+
+  <!-- STATS -->
+  <div class="stat-grid">
+    <div class="stat-card c1">
+      <div class="stat-bg"></div>
+      <div class="stat-icon"><i class="fa-solid fa-at"></i></div>
+      <div class="stat-label">Total Undangan</div>
+      <div class="stat-value"><?= esc($total_undangan) ?></div>
+      <div class="stat-change up">undangan dibuat</div>
+    </div>
+    <div class="stat-card c2">
+      <div class="stat-bg"></div>
+      <div class="stat-icon"><i class="fa-solid fa-people-group"></i></div>
+      <div class="stat-label">Total Tamu</div>
+      <div class="stat-value"><?= $total_tamu ?></div>
+      <div class="stat-change up">dari semua undangan</div>
+    </div>
+    <div class="stat-card c3">
+      <div class="stat-bg"></div>
+      <div class="stat-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+      <div class="stat-label">Sudah RSVP</div>
+      <div class="stat-value"><?= $total_rsvp ?></div>
+      <div class="stat-change up"><?= $total_tamu > 0 ? round($total_rsvp / $total_tamu * 100) : 0 ?>% dari tamu</div>
+    </div>
+    <div class="stat-card c4">
+      <div class="stat-bg"></div>
+      <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
+      <div class="stat-label">Total Views</div>
+      <div class="stat-value"><?= $total_views ?></div>
+      <div class="stat-change up">pengunjung unik</div>
+    </div>
+  </div>
+
+    <div class="card"  style="margin-bottom:20px;">
+  <!-- ── Filter & Sort Bar ─── -->
     <div class="filter-bar">
       <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">Semua (<?= esc($total_undangan) ?>)</button>
-        <button class="filter-tab" data-filter="upcoming">Akan Datang (<?= esc($upcoming_count) ?>)</button>
-        <button class="filter-tab" data-filter="past">Sudah Lewat (<?= esc($past_count) ?>)</button>
+        <button class="filter-tab active" data-filter="all">Semua</button>
+        <button class="filter-tab" data-filter="upcoming">Akan Datang</button>
+        <button class="filter-tab" data-filter="past">Sudah Lewat</button>
       </div>
       <div class="filter-actions">
         <div class="search-box">
@@ -97,10 +107,8 @@
         </div>
       </div>
     </div>
-
-    <!-- ── Invitations Container ─── -->
-    <div class="invitations-container" id="invitationsContainer">
-      <?php if (!empty($wedding_data)): ?>
+  <!-- CONTENT GRID -->
+    <?php if (!empty($wedding_data)): ?>
         <?php foreach ($wedding_data as $row): ?>
           <?php 
           // Tentukan status
@@ -129,124 +137,115 @@
           $days_left_abs = abs($row->days_left);
           $days_text = $row->days_left > 0 ? "$days_left_abs hari lagi" : ($row->days_left == 0 ? "Hari ini!" : "Sudah lewat $days_left_abs hari");
           ?>
-          
           <article class="us-card" data-status="<?= $status ?>" data-name="<?= strtolower(esc($row->nickname_men . ' ' . $row->nickname_women)) ?>">
-            <!-- Thumbnail side -->
-            <div class="us-card-thumb">
-              <div class="us-thumb-bg bg-floral">
-                <div class="us-invite-mock style-floral">
-                  <div class="invite-top" style="width:32px;"></div>
-                  <div class="invite-sub">The Wedding of</div>
-                  <div class="invite-names"><?= esc($row->nickname_men) ?><br>&amp;<br><?= esc($row->nickname_women) ?></div>
-                  <div class="invite-divider"></div>
-                  <div class="invite-date"><?= date('d/m/Y', strtotime($row->event_date)) ?></div>
+              <!-- Thumbnail side -->
+              <div class="us-card-thumb">
+                <div class="us-thumb-bg bg-floral">
+                  <div class="us-invite-mock style-floral">
+                    <div class="invite-top" style="width:32px;"></div>
+                    <div class="invite-sub">The Wedding of</div>
+                    <div class="invite-names"><?= esc($row->nickname_men) ?><br>&amp;<br><?= esc($row->nickname_women) ?></div>
+                    <div class="invite-divider"></div>
+                    <div class="invite-date"><?= date('d/m/Y', strtotime($row->event_date)) ?></div>
+                  </div>
                 </div>
-              </div>
-              <span class="us-status-badge <?= $status_class ?>"><?= $status_text ?></span>
-              <div class="us-thumb-actions">
-                <button class="thumb-action-btn" title="Lihat Undangan" onclick="window.location='<?= base_url($row->url_name) ?>'">👁️</button>
-                <button class="thumb-action-btn copy-link-btn" title="Salin Link" data-link="<?= base_url($row->url_name) ?>">🔗</button>
-                <button class="thumb-action-btn share-btn" title="Bagikan" data-link="<?= base_url($row->url_name) ?>">📤</button>
-              </div>
-            </div>
-
-            <!-- Info side -->
-            <div class="us-card-body">
-              <div class="us-card-top">
-                <div>
-                  <h2 class="us-card-title"><?= esc($row->nickname_men) ?> & <?= esc($row->nickname_women) ?></h2>
-                  <p class="us-card-template">Template: <?= esc($row->template_name) ?></p>
-                </div>
-                <div class="us-card-menu">
-                  <button class="menu-btn" title="Opsi lainnya">⋯</button>
+                <span class="us-status-badge <?= $status_class ?>"><?= $status_text ?></span>
+                <div class="us-thumb-actions">
+                  <button class="thumb-action-btn" title="Lihat Undangan" onclick="window.location='<?= base_url($row->url_name) ?>'">👁️</button>
+                  <button class="thumb-action-btn copy-link-btn" title="Salin Link" data-link="<?= base_url($row->url_name) ?>">🔗</button>
+                  <button class="thumb-action-btn share-btn" title="Bagikan" data-link="<?= base_url($row->url_name) ?>">📤</button>
                 </div>
               </div>
 
-              <!-- Date & Venue -->
-              <div class="us-meta-row">
-                <div class="us-meta-item">
-                  <span class="us-meta-icon">💌</span>
-                  <span><?=esc($row->event_name)?></span>
+              <!-- Info side -->
+              <div class="us-card-body">
+                <div class="us-card-top">
+                  <div>
+                    <h2 class="us-card-title"><?= esc($row->nickname_men) ?> & <?= esc($row->nickname_women) ?></h2>
+                    <p class="us-card-template">Template: <?= esc($row->template_name) ?></p>
+                  </div>
+                  <div class="us-card-menu">
+                    <button class="menu-btn" title="Opsi lainnya">⋯</button>
+                  </div>
                 </div>
-                <div class="us-meta-item">
-                  <span class="us-meta-icon">📅</span>
-                  <span><?= $formatted_date ?></span>
-                </div>
-                <div class="us-meta-item">
-                  <span class="us-meta-icon">📍</span>
-                  <span><?= esc($row->location) ?></span>
-                </div>
-                <div class="us-meta-item">
-                  <span class="us-meta-icon">⏰</span>
-                  <span><?= esc($row->start_at) ?> – <?= esc($row->end_at) ?></span>
-                </div>
-              </div>
 
-              <!-- Stats Row -->
-              <div class="us-stats-row">
-                <div class="us-mini-stat">
-                  <div class="us-mini-stat-val"><?= esc($row->tamu) ?></div>
-                  <div class="us-mini-stat-label">Tamu</div>
+                <!-- Date & Venue -->
+                <div class="us-meta-row">
+                  <div class="us-meta-item">
+                    <span class="us-meta-icon">💌</span>
+                    <span><?=esc($row->event_name)?></span>
+                  </div>
+                  <div class="us-meta-item">
+                    <span class="us-meta-icon">📅</span>
+                    <span><?= $formatted_date ?></span>
+                  </div>
+                  <div class="us-meta-item">
+                    <span class="us-meta-icon">📍</span>
+                    <span><?= esc($row->location) ?></span>
+                  </div>
+                  <div class="us-meta-item">
+                    <span class="us-meta-icon">⏰</span>
+                    <span><?= esc($row->start_at) ?> – <?= esc($row->end_at) ?></span>
+                  </div>
                 </div>
-                <div class="us-mini-stat">
-                  <div class="us-mini-stat-val" style="color:var(--orange);"><?= esc($row->rsvp) ?></div>
-                  <div class="us-mini-stat-label">RSVP</div>
-                </div>
-                <div class="us-mini-stat">
-                  <div class="us-mini-stat-val" style="color:#e07b2a;"><?= esc($belum_rsvp) ?></div>
-                  <div class="us-mini-stat-label">Belum</div>
-                </div>
-                <div class="us-mini-stat">
-                  <div class="us-mini-stat-val" style="color:var(--grey-600);"><?= esc($row->viewed) ?></div>
-                  <div class="us-mini-stat-label">Views</div>
-                </div>
-              </div>
 
-              <!-- RSVP Progress -->
-              <div class="us-progress-block">
-                <div class="us-progress-header">
-                  <span class="us-progress-label">Konfirmasi Kehadiran</span>
-                  <span class="us-progress-pct"><?= $rsvp_percent ?>%</span>
+                <!-- Stats Row -->
+                <div class="us-stats-row">
+                  <div class="us-mini-stat">
+                    <div class="us-mini-stat-val"><?= esc($row->tamu) ?></div>
+                    <div class="us-mini-stat-label">Tamu</div>
+                  </div>
+                  <div class="us-mini-stat">
+                    <div class="us-mini-stat-val"><?= esc($row->rsvp) ?></div>
+                    <div class="us-mini-stat-label">RSVP</div>
+                  </div>
+                  <div class="us-mini-stat">
+                    <div class="us-mini-stat-val"><?= esc($belum_rsvp) ?></div>
+                    <div class="us-mini-stat-label">Belum</div>
+                  </div>
+                  <div class="us-mini-stat">
+                    <div class="us-mini-stat-val"><?= esc($row->viewed) ?></div>
+                    <div class="us-mini-stat-label">Views</div>
+                  </div>
                 </div>
-                <div class="us-progress-bar">
-                  <div class="us-progress-fill" style="width:<?= $rsvp_percent ?>%;"></div>
-                </div>
-                <div class="us-progress-breakdown">
-                  <span class="breakdown-dot dot-hadir"></span><span><?= esc($row->rsvp) ?> Hadir</span>
-                  <span class="breakdown-dot dot-belum" style="margin-left:12px;"></span><span><?= esc($belum_rsvp) ?> Belum konfirmasi</span>
-                </div>
-              </div>
 
-              <!-- Countdown -->
-              <div class="us-countdown-row">
-                <span class="us-meta-icon">⏳</span>
-                <span class="us-countdown-text"><?= $days_text ?></span>
-                <span class="us-countdown-sub">menuju hari H</span>
-              </div>
+                <!-- RSVP Progress -->
+                <div class="us-progress-block">
+                  <div class="us-progress-header">
+                    <span class="us-progress-label">Konfirmasi Kehadiran</span>
+                    <span class="us-progress-pct"><?= $rsvp_percent ?>%</span>
+                  </div>
+                  <div class="us-progress-bar">
+                    <div class="us-progress-fill" style="width:<?= $rsvp_percent ?>%;"></div>
+                  </div>
+                  <div class="us-progress-breakdown">
+                    <span class="breakdown-dot dot-hadir"></span><span><?= esc($row->rsvp) ?> Hadir</span>
+                    <span class="breakdown-dot dot-belum" style="margin-left:12px;"></span><span><?= esc($belum_rsvp) ?> Belum konfirmasi</span>
+                  </div>
+                </div>
 
-              <!-- Actions -->
-              <div class="us-actions">
-                <button class="btn-primary btn-small" onclick="window.location='<?= base_url('undangan/' . $row->url_name) ?>'">Lihat Undangan</button>
-                <button class="btn-outline btn-small" onclick="window.location='<?= base_url('dashboard/edit/' . $row->id) ?>'">Edit</button>
-                <button class="btn-icon copy-link-btn" title="Salin Link" data-link="<?= base_url('undangan/' . $row->url_name) ?>">🔗</button>
-                <button class="btn-icon" title="Statistik" onclick="window.location='<?= base_url('dashboard/statistik/' . $row->id) ?>'">📊</button>
-                <button class="btn-icon btn-icon-danger delete-btn" title="Hapus" data-id="<?= $row->id ?>">🗑️</button>
+                <!-- Countdown -->
+                <div class="us-countdown-row">
+                  <span class="us-meta-icon">⏳</span>
+                  <span class="us-countdown-text"><?= $days_text ?></span>
+                  <span class="us-countdown-sub">menuju hari H</span>
+                </div>
+
+                <!-- Actions -->
+                <div class="us-actions">
+                  <button class="btn-save btn-small" onclick="window.location='<?= base_url('undangan/' . $row->url_name . '/guest-list') ?>'">Daftar Tamu</button>
+                  <button class="btn-cancel btn-small" onclick="window.location='<?= base_url('undangan/' . $row->url_name . '/edit') ?>'">Edit</button>
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
         <?php endforeach; ?>
       <?php endif; ?>
-    </div><!-- end invitations-container -->
-
-    <!-- ── Empty State ─── -->
-    <div class="us-empty-state" id="emptyState" style="display:none;">
-      <div class="us-empty-icon">📭</div>
-      <h3>Tidak ada undangan ditemukan</h3>
-      <p>Coba ubah filter atau kata kunci pencarian</p>
     </div>
+</main>
 
-  </main>
-</div>
+
+
+<script src="<?=base_url()?>assets/js/dashboard.js"></script>
 
 <script>
   // ── Filter Tabs ──────────────────────────────────
@@ -367,6 +366,5 @@
     });
   });
 </script>
-
 </body>
 </html>

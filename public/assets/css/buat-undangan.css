@@ -124,6 +124,7 @@ html, body {
   border-right: 1px solid var(--border);
   position: relative;
   z-index: 5;
+  width: 30vw;
 }
 
 /* ─ RIGHT: PREVIEW ─ */
@@ -341,6 +342,10 @@ html, body {
 .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6858' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
 
+.form-control-disabled{
+  background-color: grey;
+}
+
 /* ─ Event block ─ */
 .event-block {
   margin-bottom: 20px;
@@ -439,6 +444,18 @@ html, body {
 }
 .tpl-card input[type=radio] { display: none; }
 
+.tpl-card-buy {
+  border: 2px dashed var(--orange);
+  border-radius: var(--radius) ;
+  padding: 14px;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--white);
+  position: relative;
+  opacity: 0.5;
+}
+.tpl-card-buy:hover { opacity: 1;}
+
 .tpl-thumb {
   width: 100%;
   aspect-ratio: 9/14;
@@ -448,6 +465,17 @@ html, body {
   margin-bottom: 10px;
   overflow: hidden;
 }
+
+.tpl-thumb-buy {
+  width: 100%;
+  aspect-ratio: 9/14;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+  overflow: hidden;
+  text-align: center;
+}
+
 .tpl-thumb-mini {
   text-align: center;
   padding: 8px;
@@ -463,6 +491,18 @@ html, body {
   font-size: 8px;
   font-style: italic;
   color: var(--orange);
+}
+
+.tpl-thumb-text-buy {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+.tpl-thumb-text-buy-beli{
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
 }
 
 .tpl-name {
@@ -1014,6 +1054,7 @@ html, body {
   border: 1px solid var(--border, #e8e0d8);
   border-radius: 12px;
   overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .sum-section-title {
@@ -1167,4 +1208,128 @@ html, body {
     border-color: var(--orange, #e07b4a);
     color: #fff;
     font-weight: 600;
+}
+
+/* ══ GIFT BLOCK ══ */
+.gift-block {
+  background: var(--white, #fff);
+  border: 0.5px solid #e0ddd8;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.gift-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.gift-block-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft, #888);
+}
+
+.btn-remove-gift {
+  background: none;
+  border: 0.5px solid #e0ddd8;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 12px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.btn-remove-gift:hover {
+  border-color: #E24B4A;
+  color: #E24B4A;
+}
+
+/* Type selector */
+.gift-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.gift-type-opt {
+  cursor: pointer;
+}
+
+.gift-type-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.gift-type-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 1.5px solid #e0ddd8;
+  border-radius: 10px;
+  background: #fafaf9;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+  text-align: center;
+  user-select: none;
+}
+
+.gift-type-opt input[type="radio"]:checked + .gift-type-box {
+  border-color: var(--orange, #E8703A);
+  background: #fff8f4;
+  box-shadow: 0 0 0 3px rgba(232,112,58,.1);
+}
+
+.gift-type-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.gift-type-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink, #1a1a1a);
+  line-height: 1.3;
+}
+
+/* Fields */
+.gift-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.gift-fields .field {
+  margin-bottom: 10px;
+}
+
+/* Add button — sama style dengan btn-add-acara */
+.btn-add-gift {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: 1.5px dashed #ccc;
+  border-radius: 10px;
+  color: var(--ink-soft, #888);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+  margin-top: 4px;
+}
+.btn-add-gift:hover {
+  border-color: var(--orange, #E8703A);
+  color: var(--orange, #E8703A);
 }
